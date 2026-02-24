@@ -14,7 +14,7 @@ export default function UserList({ title, icon, users, accentColor }) {
                 <h3 className={styles.title}>
                     <span>{icon}</span> {title}
                 </h3>
-                <p className={styles.empty}>Kullanıcı bulunamadı ✨</p>
+                <p className={styles.empty}>No users found ✨</p>
             </div>
         );
     }
@@ -70,8 +70,8 @@ export default function UserList({ title, icon, users, accentColor }) {
                     onClick={() => setShowAll((prev) => !prev)}
                 >
                     {showAll
-                        ? "Daha az göster"
-                        : `Tümünü göster (${users.length - INITIAL_COUNT} daha)`}
+                        ? "Show less"
+                        : `Show all (${users.length - INITIAL_COUNT} more)`}
                 </button>
             )}
         </div>

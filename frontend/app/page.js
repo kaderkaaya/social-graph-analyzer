@@ -29,7 +29,6 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroGlow} />
         <h1 className={styles.title}>
@@ -38,20 +37,17 @@ export default function Home() {
           <span className={styles.titleAccent}> Analyzer</span>
         </h1>
         <p className={styles.subtitle}>
-          GitHub hesabınızı analiz edin — sizi geri takip etmeyenleri ve takip
-          etmediklerinizi keşfedin.
+          Analyze your GitHub account: discover who doesn't follow you back and who you don't follow back.
         </p>
         <SearchForm onSearch={handleSearch} isLoading={isLoading} />
       </section>
 
-      {/* Error */}
       {error && (
         <div className={styles.error}>
           <span>⚠️</span> {error}
         </div>
       )}
 
-      {/* Loading Skeleton */}
       {isLoading && (
         <section className={styles.results}>
           <div className={styles.skeletonCards}>
@@ -66,10 +62,8 @@ export default function Home() {
         </section>
       )}
 
-      {/* Results */}
       {result && !isLoading && (
         <section className={styles.results}>
-          {/* Profile Header */}
           <div className={styles.profileHeader}>
             <img
               className={styles.profileAvatar}
@@ -82,26 +76,22 @@ export default function Home() {
               <h2 className={styles.profileName}>{result.username}</h2>
               <p className={styles.profileMeta}>
                 {result.truncated.followers || result.truncated.following
-                  ? "⚠️ Büyük hesap — bazı veriler kısıtlanmış olabilir"
-                  : "✅ Tüm veriler başarıyla çekildi"}
+                  ? "Large account — some data may be limited"
+                  : "All data was fetched successfully"}
               </p>
             </div>
           </div>
 
-          {/* Stats */}
           <StatsCards counts={result.counts} />
 
-          {/* User Lists */}
           <div className={styles.listsGrid}>
             <UserList
-              title="Geri Takip Etmeyenler"
-              icon="💔"
+              title="Not Following Back "
               users={result.result.notFollowingBack}
               accentColor="#ef4444"
             />
             <UserList
-              title="Senin Takip Etmediklerin"
-              icon="👻"
+              title="Not Followed Back"
               users={result.result.notFollowedBack}
               accentColor="#10b981"
             />
@@ -109,10 +99,9 @@ export default function Home() {
         </section>
       )}
 
-      {/* Footer */}
       <footer className={styles.footer}>
         <p>
-          Built with 💜 using Next.js &amp; GitHub API
+          Built by Kader Kaya
         </p>
       </footer>
     </main>

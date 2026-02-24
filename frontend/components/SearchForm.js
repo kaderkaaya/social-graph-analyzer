@@ -30,7 +30,7 @@ export default function SearchForm({ onSearch, isLoading }) {
                     id="github-username-input"
                     type="text"
                     className={styles.input}
-                    placeholder="GitHub kullanıcı adı girin..."
+                    placeholder="Enter GitHub username..."
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     disabled={isLoading}
@@ -58,7 +58,7 @@ export default function SearchForm({ onSearch, isLoading }) {
                             <circle cx="11" cy="11" r="8" />
                             <path d="M21 21l-4.35-4.35" />
                         </svg>
-                        Analiz Et
+                        Analyze
                     </>
                 )}
             </button>

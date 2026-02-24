@@ -1,14 +1,14 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Social Graph Analyzer — GitHub Takip Analizi",
+  title: "Social Graph Analyzer",
   description:
-    "GitHub hesabınızı analiz edin: sizi geri takip etmeyenleri ve sizin takip etmediklerinizi keşfedin.",
+    "Analyze your GitHub account: discover who doesn't follow you back and who you don't follow back.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="tr">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );
