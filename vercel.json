@@ -1,0 +1,6 @@
+{
+    "framework": "nextjs",
+    "source": "/(.*)",
+    "destination": "/index.html"
+  }
+  
