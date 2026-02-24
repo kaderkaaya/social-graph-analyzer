@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000" 
+    env_file:
+      - ./backend/.env
+    environment:
+      - PORT=3000
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000" 
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001  
+    depends_on:
+      - backend
+    restart: unless-stopped
