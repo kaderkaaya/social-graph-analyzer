@@ -3,14 +3,12 @@ FROM node:18-alpine
 ENV NODE_ENV=production
 
 WORKDIR /app
+RUN chown node:node /app
 
-COPY package*.json ./
+COPY --chown=node:node package*.json ./
+RUN npm install --production
 
-USER node
-
-RUN npm install
-
-COPY . .
+COPY --chown=node:node . .
 
 EXPOSE 3000
 
