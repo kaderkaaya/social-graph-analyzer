@@ -32,7 +32,7 @@ export default function Home() {
       <section className={styles.hero}>
         <div className={styles.heroGlow} />
         <h1 className={styles.title}>
-          <span className={styles.titleIcon}>🔍</span>
+          <span className={styles.titleIcon}></span>
           Social Graph
           <span className={styles.titleAccent}> Analyzer</span>
         </h1>
