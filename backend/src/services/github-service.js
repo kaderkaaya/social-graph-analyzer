@@ -3,8 +3,8 @@ const CompareService = require("../core/compare-service");
 class GithubService {
   static async compareGithubUsers({ username }) {
     const [followersRes, followingRes] = await Promise.all([
-      getFollowers(username, 20000),
-      getFollowing(username, 20000),
+      getFollowers(username),
+      getFollowing(username),
     ]);
 
     const { notFollowingBack, notFollowedBack } =

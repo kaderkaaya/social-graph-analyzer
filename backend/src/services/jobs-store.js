@@ -1,10 +1,10 @@
 const jobs = new Map();
-const uuid = require("uuid");
+const { v4: uuidv4 } = require("uuid");
 const GithubService = require("./github-service");
 
 class JobsStore {
   static async compareWithJobIds({ username }) {
-    const jobId = uuid.v4();
+    const jobId = uuidv4();
     const job = {
       jobId,
       username,
