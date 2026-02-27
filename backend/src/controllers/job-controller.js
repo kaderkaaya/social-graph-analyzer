@@ -4,10 +4,10 @@ class JobController {
   static async compareGithubWithJobIds(req, res) {
     try {
       const { username } = req.body;
-      const result = await JobsStore.compareWithJobIds({ username });
+      const job = await JobsStore.compareWithJobIds({ username });
       res
         .status(200)
-        .json({ message: "data fetched successfully", data: { result } });
+        .json({ message: "data fetched successfully", data: { job } });
     } catch (error) {
       res
         .status(500)
@@ -18,10 +18,10 @@ class JobController {
   static async getJob(req, res) {
     try {
       const { jobId } = req.params;
-      const result = await JobsStore.getJob({ jobId });
+      const job = await JobsStore.getJob({ jobId });
       res
         .status(200)
-        .json({ message: "data fetched successfully", data: { result } });
+        .json({ message: "data fetched successfully", data: { job } });
     } catch (error) {
       res
         .status(500)

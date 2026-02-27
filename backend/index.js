@@ -3,6 +3,7 @@ const githubRoutes = require("./src/routes/github-routes");
 const jobRoutes = require("./src/routes/job-routes");
 const express = require("express");
 const cors = require("cors");
+require("./src/jobs/jobs-worker");
 const app = express();
 app.use(cors());
 app.use(express.json());

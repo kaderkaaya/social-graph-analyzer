@@ -1,28 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import SearchForm from "../components/SearchForm";
 import StatsCards from "../components/StatsCards";
 import UserList from "../components/UserList";
-import { compareGithubUsers } from "../lib/api";
+import { startCompareJob, getJob } from "../lib/api";
 import styles from "./page.module.css";
+
+const POLL_INTERVAL_MS = 1500;
 
 export default function Home() {
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
+  const pollRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
 
   const handleSearch = async (username) => {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setProgress(0);
+
+    if (pollRef.current) clearInterval(pollRef.current);
 
     try {
-      const data = await compareGithubUsers(username);
-      setResult(data);
+      const { jobId } = await startCompareJob(username);
+
+      const poll = async () => {
+        try {
+          const job = await getJob(jobId);
+          setProgress(job.progress ?? 0);
+          if (job.status === "completed") {
+            if (pollRef.current) clearInterval(pollRef.current);
+            pollRef.current = null;
+            setResult(job.result);
+            setIsLoading(false);
+          }
+        } catch (err) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
+          setError(err.message || "Job durumu alınamadı");
+          setIsLoading(false);
+        }
+      };
+
+      pollRef.current = setInterval(poll, POLL_INTERVAL_MS);
+      await poll();
     } catch (err) {
       setError(err.message || "Bir hata oluştu");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -50,6 +82,9 @@ export default function Home() {
 
       {isLoading && (
         <section className={styles.results}>
+          <p className={styles.progressText}>
+            Analyzing large account... {progress}%
+          </p>
           <div className={styles.skeletonCards}>
             {[...Array(4)].map((_, i) => (
               <div key={i} className={styles.skeletonCard} />

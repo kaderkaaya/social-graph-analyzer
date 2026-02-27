@@ -60,6 +60,67 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "compare-with-jobIds",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n \"username\":\"kaderkaaya\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/job/compare-with-jobIds",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "job",
+            "compare-with-jobIds"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/job/:jobId",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n \"username\":\"kaderkaaya\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/job/6158b85a-ca6e-41b9-b4eb-f5aede60072b",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "job",
+            "6158b85a-ca6e-41b9-b4eb-f5aede60072b"
+          ]
+        }
+      },
+      "response": []
     }
   ]
 }

@@ -1,30 +1,32 @@
-const jobs = new Map();
+//const jobs = new Map();
+//burda artık set yerine queue kullanılır.
+const jobsQueue = require("../jobs/jobs-queue");
 const { v4: uuidv4 } = require("uuid");
 const GithubService = require("./github-service");
 
 class JobsStore {
   static async compareWithJobIds({ username }) {
-    const jobId = uuidv4();
-    const job = {
-      jobId,
-      username,
-      status: "pending",
-      progress: 0,
-      result: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    jobs.set(jobId, job);
+    //const jobId = uuidv4();
+    const job = await jobsQueue.add(
+      "github-compare",
+      { username },
+      {
+        attempts: 3, //hata durumunda 3 kere tekrar denenir.
+        backoff: { type: "exponential", delay: 5000 }, //hata durumunda 5 saniye sonra tekrar denenir.
+      },
+    );
+    //jobs.set(jobId, job);
 
-    this.runComparisonTask({
-      jobId,
+    /*this.runComparisonTask({
+      jobId: job.id,
       username,
     });
-
+    */
+    
     return {
-      jobId,
+      jobId: job.id,
       status: "pending",
-      message: "Comparison started in background",
+      message: "added to queue",
     };
   }
 
@@ -44,13 +46,26 @@ class JobsStore {
     }
     return job;
   }
+  //burda artık queue'ya eklenen job'ları çalıştırır.
+  //runComparisonTask fonksiyonu artık kullanılmaz.
+  //çünkü bullmq ile job'ları çalıştırır.
+  //burda status ve progress bilgileri queue'dan alınır.
+  //eğer set ederek yani  bizim nodejsmizde değilde rediste tutuyoruz.
+  //bu yüzden bu fonksiyon artık kullanılmaz.
 
   static async getJob({ jobId }) {
-    const job = jobs.get(jobId);
+    const job = await jobsQueue.getJob(jobId);
     if (!job) {
-      throw new Error("Job not found");
+      return null;
     }
-    return job;
+    const state = await job.getState();
+    return {
+      jobId: job.id,
+      status: state,
+      progress: job.progress,
+      result: job.returnvalue,
+      failedReason: job.failedReason,
+    };
   }
 }
 module.exports = JobsStore;

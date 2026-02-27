@@ -119,14 +119,19 @@
   margin: 4px 0 0;
 }
 
-/* ── Lists Grid ── */
 .listsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
 }
 
-/* ── Skeleton Loading ── */
+.progressText {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin: 0;
+  text-align: center;
+}
+
 .skeletonCards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -155,7 +160,6 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* ── Footer ── */
 .footer {
   margin-top: auto;
   padding: 48px 0 24px;
@@ -164,7 +168,6 @@
   text-align: center;
 }
 
-/* ── Animations ── */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -189,7 +192,6 @@
   }
 }
 
-/* ── Responsive ── */
 @media (max-width: 768px) {
   .title {
     font-size: 2rem;
