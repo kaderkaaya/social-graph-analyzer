@@ -1,12 +1,43 @@
 //const jobs = new Map();
 //burda artık set yerine queue kullanılır.
+const Redis = require("ioredis");
+const redisConnection = require("../config/redis");
+const redisClient = new Redis(redisConnection);
+
+const CACHE_KEY_PREFIX = "github-compare:result:";
 const jobsQueue = require("../jobs/jobs-queue");
-const { v4: uuidv4 } = require("uuid");
-const GithubService = require("./github-service");
 
 class JobsStore {
   static async compareWithJobIds({ username }) {
-    //const jobId = uuidv4();
+    const cacheKey = `${CACHE_KEY_PREFIX}${username}`;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      return {
+        jobId: parsed.jobId,
+        status: "completed",
+        result: parsed.result,
+        message: "from cache",
+      };
+    }
+
+    const existingJobs = await jobsQueue.getJobs([
+      "pending",
+      "active",
+      "delayed",
+    ]);
+    const existingJob = existingJobs.find(
+      (j) => j.data && j.data.username === username,
+    );
+    if (existingJob) {
+      const state = await existingJob.getState();
+      return {
+        jobId: existingJob.id,
+        status: state,
+        message: "existing job",
+      };
+    }
+
     const job = await jobsQueue.add(
       "github-compare",
       { username },
@@ -22,7 +53,7 @@ class JobsStore {
       username,
     });
     */
-    
+
     return {
       jobId: job.id,
       status: "pending",
@@ -30,7 +61,7 @@ class JobsStore {
     };
   }
 
-  static async runComparisonTask({ jobId, username }) {
+  /*static async runComparisonTask({ jobId, username }) {
     const job = jobs.get(jobId);
     if (!job) {
       throw new Error("failed to run comparison task");
@@ -45,7 +76,7 @@ class JobsStore {
       job.updatedAt = new Date();
     }
     return job;
-  }
+  }*/
   //burda artık queue'ya eklenen job'ları çalıştırır.
   //runComparisonTask fonksiyonu artık kullanılmaz.
   //çünkü bullmq ile job'ları çalıştırır.

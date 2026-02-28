@@ -1,12 +1,15 @@
 const { Worker } = require("bullmq");
+const Redis = require("ioredis");
 const redisConnection = require("../config/redis");
-const jobsQueue = require("./jobs-queue");
 const GithubService = require("../services/github-service");
+
+const redisClient = new Redis(redisConnection);
+const CACHE_KEY_PREFIX = "github-compare:result:";
+const CACHE_TTL_SEC = 3600;
 
 const jobsWorker = new Worker(
   "github-compare",
   async (job) => {
-   
     const { username } = job.data;
     await job.updateProgress(10);
     const result = await GithubService.compareGithubUsers({ username }, job);
@@ -20,7 +23,12 @@ const jobsWorker = new Worker(
 );
 
 jobsWorker.on("completed", (job, result) => {
-  console.log(`Job ${job.id} completed with result: ${result}`);
+  const cacheKey = `${CACHE_KEY_PREFIX}${job.data.username}`;
+  redisClient.setex(
+    cacheKey,
+    CACHE_TTL_SEC,
+    JSON.stringify({ jobId: job.id, result }),
+  );
 });
 
 jobsWorker.on("failed", (job, error) => {
