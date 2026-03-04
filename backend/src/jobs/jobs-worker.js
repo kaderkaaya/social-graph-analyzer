@@ -2,20 +2,33 @@ const { Worker } = require("bullmq");
 const Redis = require("ioredis");
 const redisConnection = require("../config/redis");
 const GithubService = require("../services/github-service");
-
 const redisClient = new Redis(redisConnection);
 const CACHE_KEY_PREFIX = "github-compare:result:";
 const CACHE_TTL_SEC = 3600;
+const { getIo } = require("../config/socket");
+const GithubHelper = require("../helpers/github");
 
 const jobsWorker = new Worker(
   "github-compare",
   async (job) => {
     const { username } = job.data;
-    await job.updateProgress(10);
+    const response = await fetch(`https://api.github.com/users/${username}`);
+    const userData = await response.json();
+    const followersCountProgress = userData.followers / 100;
+    const followingCountProgress = userData.following / 100;
+    const io = getIo();
+    await GithubHelper.fetchAllLogins(
+      userData.followers_url,
+      io,
+      job,
+      followersCountProgress,
+      followingCountProgress,
+    );
     const result = await GithubService.compareGithubUsers({ username }, job);
-    await job.updateProgress(100);
+    io.to(`job-${job.id}`).emit("progress", { progress: 100 });
     return result;
   },
+  //burda worker işlemi bitirdiğinde io ile client'a progress bilgisi gönderiliyor.
   {
     connection: redisConnection,
     concurrency: 1, //burda githuba artık 1 tane istek atılır. böylece rate limit'i aşmamak için.
@@ -33,6 +46,8 @@ jobsWorker.on("completed", (job, result) => {
 
 jobsWorker.on("failed", (job, error) => {
   console.log(`Job ${job.id} failed with error: ${error}`);
+  const io = getIo();
+  io.to(`job-${job.id}`).emit("job-failed", { error });
 });
 //bizim burda asıl amacımız job'ları queue'ya eklemek ve worker'ları çalıştırmak.
 //job'ları queue'ya eklemek için jobsQueue.add('github-compare', { username }) kullanılır.
