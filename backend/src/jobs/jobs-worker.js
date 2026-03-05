@@ -6,7 +6,6 @@ const redisClient = new Redis(redisConnection);
 const CACHE_KEY_PREFIX = "github-compare:result:";
 const CACHE_TTL_SEC = 3600;
 const { getIo } = require("../config/socket");
-const GithubHelper = require("../helpers/github");
 
 const jobsWorker = new Worker(
   "github-compare",
@@ -14,17 +13,14 @@ const jobsWorker = new Worker(
     const { username } = job.data;
     const response = await fetch(`https://api.github.com/users/${username}`);
     const userData = await response.json();
-    const followersCountProgress = userData.followers / 100;
-    const followingCountProgress = userData.following / 100;
-    const io = getIo();
-    await GithubHelper.fetchAllLogins(
-      userData.followers_url,
-      io,
+    const totalFollowers = userData.followers ?? 0;
+    const totalFollowing = userData.following ?? 0;
+    const result = await GithubService.compareGithubUsers(
+      { username, totalFollowers, totalFollowing },
       job,
-      followersCountProgress,
-      followingCountProgress,
     );
-    const result = await GithubService.compareGithubUsers({ username }, job);
+    await job.updateProgress(100);
+    const io = getIo();
     io.to(`job-${job.id}`).emit("progress", { progress: 100 });
     return result;
   },

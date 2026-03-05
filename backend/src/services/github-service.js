@@ -1,27 +1,36 @@
-const { getFollowers, getFollowing } = require("../helpers/github");
+const { fetchFollowersAndFollowing } = require("../helpers/github");
 const CompareService = require("../core/compare-service");
+const { getIo } = require("../config/socket");
+
 class GithubService {
-  static async compareGithubUsers({ username }, job) {
-    const [followersRes, followingRes] = await Promise.all([
-      getFollowers(username),
-      getFollowing(username),
-    ]);
+  static async compareGithubUsers(
+    { username, totalFollowers = 0, totalFollowing = 0 },
+    job,
+  ) {
+    const io = getIo();
+    const { followers, following } = await fetchFollowersAndFollowing(
+      username,
+      io,
+      job,
+      totalFollowers,
+      totalFollowing,
+    );
     const { notFollowingBack, notFollowedBack } =
       await CompareService.compareFollowersFollowing(
-        followersRes.logins,
-        followingRes.logins,
+        followers.logins,
+        following.logins,
       );
     return {
       username,
       counts: {
-        followersFetched: followersRes.logins.length,
-        followingFetched: followingRes.logins.length,
+        followersFetched: followers.logins.length,
+        followingFetched: following.logins.length,
         notFollowingBack: notFollowingBack.length,
         notFollowedBack: notFollowedBack.length,
       },
       truncated: {
-        followers: followersRes.truncated,
-        following: followingRes.truncated,
+        followers: followers.truncated,
+        following: following.truncated,
       },
       result: {
         notFollowingBack,
