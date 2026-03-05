@@ -5,20 +5,19 @@ import SearchForm from "../components/SearchForm";
 import StatsCards from "../components/StatsCards";
 import UserList from "../components/UserList";
 import { startCompareJob, getJob } from "../lib/api";
+import { joinJobRoom, leaveJobRoom } from "../lib/socket";
 import styles from "./page.module.css";
-
-const POLL_INTERVAL_MS = 1500;
 
 export default function Home() {
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
-  const pollRef = useRef(null);
+  const socketHandlersRef = useRef(null);
 
   useEffect(() => {
     return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
+      if (socketHandlersRef.current) leaveJobRoom(socketHandlersRef.current);
     };
   }, []);
 
@@ -28,31 +27,42 @@ export default function Home() {
     setResult(null);
     setProgress(0);
 
-    if (pollRef.current) clearInterval(pollRef.current);
+    if (socketHandlersRef.current) leaveJobRoom(socketHandlersRef.current);
 
     try {
       const { jobId } = await startCompareJob(username);
 
-      const poll = async () => {
-        try {
-          const job = await getJob(jobId);
-          setProgress(job.progress ?? 0);
-          if (job.status === "completed") {
-            if (pollRef.current) clearInterval(pollRef.current);
-            pollRef.current = null;
-            setResult(job.result);
+      const onProgress = (payload) => {
+        setProgress(payload.progress ?? 0);
+        if (payload.progress === 100) {
+          leaveJobRoom(socketHandlersRef.current);
+          const fetchResult = () =>
+            getJob(jobId).then((job) => {
+              if (job?.result) {
+                setResult(job.result);
+              } else {
+                throw new Error("Sonuç henüz hazır değil");
+              }
+              setIsLoading(false);
+            });
+          fetchResult().catch(() => {
+            // Worker bitti ama cache henüz yazılmış olmayabilir; aynı endpoint'i kısa gecikmeyle tekrar çağır
+            return new Promise((r) => setTimeout(r, 300)).then(fetchResult);
+          }).catch((err) => {
+            setError(err?.message || "Sonuç alınamadı");
             setIsLoading(false);
-          }
-        } catch (err) {
-          if (pollRef.current) clearInterval(pollRef.current);
-          pollRef.current = null;
-          setError(err.message || "Job durumu alınamadı");
-          setIsLoading(false);
+          });
         }
       };
 
-      pollRef.current = setInterval(poll, POLL_INTERVAL_MS);
-      await poll();
+      const onJobFailed = (payload) => {
+        leaveJobRoom(socketHandlersRef.current);
+        setError(payload?.error?.message || "Job başarısız oldu");
+        setIsLoading(false);
+      };
+
+      socketHandlersRef.current = { onProgress, onJobFailed };
+      joinJobRoom(jobId, socketHandlersRef.current);
     } catch (err) {
       setError(err.message || "Bir hata oluştu");
       setIsLoading(false);
@@ -69,7 +79,8 @@ export default function Home() {
           <span className={styles.titleAccent}> Analyzer</span>
         </h1>
         <p className={styles.subtitle}>
-          Analyze your GitHub account: discover who doesn't follow you back and who you don't follow back.
+          Analyze your GitHub account: discover who doesn't follow you back and
+          who you don't follow back.
         </p>
         <SearchForm onSearch={handleSearch} isLoading={isLoading} />
       </section>
@@ -82,9 +93,7 @@ export default function Home() {
 
       {isLoading && (
         <section className={styles.results}>
-          <p className={styles.progressText}>
-            Analyzing large account... {progress}%
-          </p>
+          <p className={styles.progressText}>Analyzing {progress}%</p>
           <div className={styles.skeletonCards}>
             {[...Array(4)].map((_, i) => (
               <div key={i} className={styles.skeletonCard} />
@@ -135,9 +144,7 @@ export default function Home() {
       )}
 
       <footer className={styles.footer}>
-        <p>
-          Built by Kader Kaya
-        </p>
+        <p>Built by Kader Kaya</p>
       </footer>
     </main>
   );
