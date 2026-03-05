@@ -11,11 +11,15 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000" 
+      - "3000:3000"
     env_file:
       - ./backend/.env
     environment:
       - PORT=3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
     restart: unless-stopped
 
   frontend:
