@@ -1,6 +1,5 @@
 {
   "framework": "nextjs",
-  "destination": "/index.html",
   "version": 2,
   "builds": [
     {
