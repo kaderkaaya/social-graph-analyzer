@@ -30,7 +30,14 @@ export default function Home() {
     if (socketHandlersRef.current) leaveJobRoom(socketHandlersRef.current);
 
     try {
-      const { jobId } = await startCompareJob(username);
+      const job = await startCompareJob(username);
+      const { jobId, status, result: cachedResult } = job ?? {};
+
+      if (status === "completed" && cachedResult) {
+        setResult(cachedResult);
+        setIsLoading(false);
+        return;
+      }
 
       const onProgress = (payload) => {
         setProgress(payload.progress ?? 0);
@@ -46,7 +53,6 @@ export default function Home() {
               setIsLoading(false);
             });
           fetchResult().catch(() => {
-            // Worker bitti ama cache henüz yazılmış olmayabilir; aynı endpoint'i kısa gecikmeyle tekrar çağır
             return new Promise((r) => setTimeout(r, 300)).then(fetchResult);
           }).catch((err) => {
             setError(err?.message || "Sonuç alınamadı");
