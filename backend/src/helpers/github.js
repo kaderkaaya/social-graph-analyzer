@@ -29,7 +29,6 @@ async function fetchFollowersAndFollowing(username, io, job, totalFollowers, tot
       page <= totalFollowersPages ? fetchPageLogins(followersUrl, page) : [],
       page <= totalFollowingPages ? fetchPageLogins(followingUrl, page) : [],
     ]);
-
     for (const login of followersChunk) {
       if (followersLogins.length >= MAX_ITEMS) {
         followersTruncated = true;

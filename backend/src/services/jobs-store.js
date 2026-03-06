@@ -42,17 +42,10 @@ class JobsStore {
       "github-compare",
       { username },
       {
-        attempts: 3, //hata durumunda 3 kere tekrar denenir.
-        backoff: { type: "exponential", delay: 5000 }, //hata durumunda 5 saniye sonra tekrar denenir.
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5000 },
       },
     );
-    //jobs.set(jobId, job);
-
-    /*this.runComparisonTask({
-      jobId: job.id,
-      username,
-    });
-    */
 
     return {
       jobId: job.id,

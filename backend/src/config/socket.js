@@ -5,21 +5,14 @@ let io;
 const initializeSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: "*", //burda fe bağlantısını yazacağız.
+      origin: "*",
     },
   });
-  //aslında burda socket.io'nun connection event'i çalışır.
-  //yani client bağlantısı kurulduğunda bu event çalışır.
-  //yani fe'den bir istek atıldığında bu event çalışır.
   io.on("connection", (socket) => {
-    console.log("a user connected");
     socket.on("join-job", (jobId) => {
       socket.join(`job-${jobId}`);
-      console.log(`user ${socket.id} joined job ${jobId}`);
     });
-    socket.on("disconnect", () => {
-      console.log("a user disconnected");
-    });
+    socket.on("disconnect", () => {});
   });
   return io;
 };
