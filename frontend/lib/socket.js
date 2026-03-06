@@ -20,17 +20,15 @@ export function joinJobRoom(jobId, handlers = {}) {
 
   s.emit("join-job", jobId);
 
-  if (handlers.onProgress) {
-    s.on("progress", handlers.onProgress);
-  }
-  if (handlers.onJobFailed) {
-    s.on("job-failed", handlers.onJobFailed);
-  }
+  if (handlers.onJobCompleted) s.on("job-completed", handlers.onJobCompleted);
+  if (handlers.onProgress) s.on("progress", handlers.onProgress);
+  if (handlers.onJobFailed) s.on("job-failed", handlers.onJobFailed);
 }
 
 export function leaveJobRoom(handlers = {}) {
   const s = getSocket();
   if (!s) return;
+  if (handlers.onJobCompleted) s.off("job-completed", handlers.onJobCompleted);
   if (handlers.onProgress) s.off("progress", handlers.onProgress);
   if (handlers.onJobFailed) s.off("job-failed", handlers.onJobFailed);
 }

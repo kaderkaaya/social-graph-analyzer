@@ -39,18 +39,32 @@ export default function Home() {
         return;
       }
 
+      const onJobCompleted = (payload) => {
+        leaveJobRoom(socketHandlersRef.current);
+        if (payload?.result) {
+          setResult(payload.result);
+        } else {
+          getJob(jobId).then((job) => {
+            if (job?.result) setResult(job.result);
+            else setError("Sonuç alınamadı");
+          }).catch((err) => setError(err?.message || "Sonuç alınamadı"));
+        }
+        setIsLoading(false);
+      };
+
       const onProgress = (payload) => {
-        setProgress(payload.progress ?? 0);
-        if (payload.progress === 100) {
+        const p = Number(payload?.progress) || 0;
+        setProgress(p);
+        if (p >= 100) {
           leaveJobRoom(socketHandlersRef.current);
           const fetchResult = () =>
             getJob(jobId).then((job) => {
               if (job?.result) {
                 setResult(job.result);
+                setIsLoading(false);
               } else {
                 throw new Error("Sonuç henüz hazır değil");
               }
-              setIsLoading(false);
             });
           fetchResult().catch(() => {
             return new Promise((r) => setTimeout(r, 300)).then(fetchResult);
@@ -67,7 +81,7 @@ export default function Home() {
         setIsLoading(false);
       };
 
-      socketHandlersRef.current = { onProgress, onJobFailed };
+      socketHandlersRef.current = { onProgress, onJobCompleted, onJobFailed };
       joinJobRoom(jobId, socketHandlersRef.current);
     } catch (err) {
       setError(err.message || "Bir hata oluştu");

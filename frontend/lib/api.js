@@ -32,7 +32,7 @@ export async function startCompareJob(username) {
   }
 
   const json = await res.json();
-  return json.data.job;
+  return json.data?.job;
 }
 
 export async function getJob(jobId) {
@@ -43,5 +43,5 @@ export async function getJob(jobId) {
   }
 
   const json = await res.json();
-  return json.data.job;
+  return json.data?.job;
 }
